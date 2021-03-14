@@ -1,0 +1,1 @@
+1. Edit and Run MAKE_Release.bat
