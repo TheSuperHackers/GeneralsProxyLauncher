@@ -26,6 +26,16 @@ xezon
 
 
 -----------------------------------------------------------------------------------------------
+--- Customizations ----------------------------------------------------------------------------
+
++ Edit launcher\commandline.txt to append custom command line arguments to executable.
+
++ Edit launcher\big.txt to enable custom .big files located relative to launcher folder.
+  For example specifying "..\MyBigFile.big" would enable loading of MyBigFile.big
+  in game root directory when using launcher\generals.exe.
+
+
+-----------------------------------------------------------------------------------------------
 --- Changelog ---------------------------------------------------------------------------------
 
 v1.0:
