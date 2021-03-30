@@ -11,7 +11,7 @@
 #define COMMANDLINE L" -win"
 
 // Use shell execute. Create Process does not work properly on some clients.
-#define USE_SHELLEXECUTE 1
+//#define USE_SHELLEXECUTE 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,8 +27,13 @@ bool IsAtleastWindowsVista()
 
 void Welcome()
 {
-	::printf("Generals Proxy Launcher v1.9 by xezon\n");
+#if USE_SHELLEXECUTE
+	::printf("Generals Proxy Launcher (Shell) v2.0 by xezon\n");
+	::printf("---------------------------------------------\n\n");
+#else
+	::printf("Generals Proxy Launcher v2.0 by xezon\n");
 	::printf("-------------------------------------\n\n");
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
