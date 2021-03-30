@@ -6,7 +6,7 @@ xezon
 -----------------------------------------------------------------------------------------------
 --- Install -----------------------------------------------------------------------------------
 
-1. Copy the "launcher" folder and all its contents
+1. Copy the "launcher" or "launcherShell" (*1) folder and all its contents
    into the game install directory, for example:
    > C:\Program Files (x86)\EA Games\Command & Conquer Generals Zero Hour
 
@@ -14,6 +14,7 @@ xezon
 
    Directory hierarchy should look like this:
    > C:\Program Files (x86)\EA Games\Command & Conquer Generals Zero Hour\launcher\
+   > C:\Program Files (x86)\EA Games\Command & Conquer Generals Zero Hour\launcherShell\
 
 2. Start GameRanger
 
@@ -23,6 +24,11 @@ xezon
 
 5. Click Browse... and navigate to generals.exe in launcher directory, for example:
    > C:\Program Files (x86)\EA Games\Command & Conquer Generals Zero Hour\launcher\generals.exe
+
+
+
+(*1) Whether or not you can use "launcher" or "launcherShell" depends on your system.
+     Some systems don't work correctly with one or the other.
 
 
 -----------------------------------------------------------------------------------------------
@@ -72,3 +78,6 @@ v1.8
 
 v1.9
 - Use ShellExecute instead of CreateProcess launch method
+
+v2.0
+- Add proxy launcher for both CreateProcess method (launcher) and ShellExecute method (launcherShell)
