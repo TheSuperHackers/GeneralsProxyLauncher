@@ -9,9 +9,7 @@ if not exist %ReleaseDir% mkdir %ReleaseDir%
 if not exist %ReleaseUnpackedLauncherDir% mkdir %ReleaseUnpackedLauncherDir%
 if not exist %ReleaseUnpackedLauncherShellDir% mkdir %ReleaseUnpackedLauncherShellDir%
 
-xcopy /Y Code\vc9\Release\generals.exe %ReleaseUnpackedLauncherDir%\
-xcopy /Y Code\vc9\Release_ShellExecute\generals.exe %ReleaseUnpackedLauncherShellDir%\
+xcopy /Y Code\vc9\Release\*.exe %ReleaseUnpackedLauncherDir%\
+xcopy /Y Code\vc9\Release_ShellExecute\*.exe %ReleaseUnpackedLauncherShellDir%\
 
 tar.exe -a -c -C %ReleaseUnpackedDir% -f %ReleaseDir%\%ArchiveName%.zip *.*
-
-pause
