@@ -81,3 +81,6 @@ v1.9
 
 v2.0
 - Add proxy launcher for both CreateProcess method (launcher) and ShellExecute method (launcherShell)
+
+v2.1
+- Add generals icon in executables

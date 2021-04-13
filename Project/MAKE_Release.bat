@@ -1,4 +1,4 @@
-set ArchiveName=GeneralsProxyLauncher_v2.0
+set ArchiveName=GeneralsProxyLauncher_v2.1
 
 set ReleaseDir=Release
 set ReleaseUnpackedDir=ReleaseUnpacked
