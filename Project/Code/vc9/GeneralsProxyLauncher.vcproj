@@ -181,6 +181,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\resource.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\resources.rc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\SingleInstance.cpp"
 				>
 			</File>
