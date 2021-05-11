@@ -81,7 +81,8 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 	::wcslcpy_t(wszApplicationExe, wszGameDir);
 	::wcslcat_t(wszApplicationExe, L"\\generals.exe");
 
-	wchar_t wszCommandline[2048] = {0};
+	wchar_t wszCommandline[32767];
+	wszCommandline[0] = 0;
 
 	if (!ReadAsciiFile(wszCommandlineTxt, wszCommandline))
 	{
