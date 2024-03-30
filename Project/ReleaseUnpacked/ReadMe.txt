@@ -28,11 +28,28 @@ xezon
 -----------------------------------------------------------------------------------------------
 --- Customizations ----------------------------------------------------------------------------
 
-+ Edit launcher\commandline.txt to append custom command line arguments to executable.
++ big.txt
+  Enables custom .big files prior game launch. Can specify multiple.
+  For example, specifying
+  ..\Mod.big
+  ..\Addon.big
+  would rename Mod.big.bak to Mod.big and Addon.big.bak to Addon.big.
+  After game shutdown the file name changes are reverted.
 
-+ Edit launcher\big.txt to enable custom .big files located relative to launcher folder.
-  For example specifying "..\MyBigFile.big" would enable loading of MyBigFile.big
-  in game root directory when using launcher\generals.exe.
++ commandline.txt
+  Specifies custom command line arguments for game launch.
+
++ launch.txt
+  Specifies game executable(s) used for game launch. Can specify multiple.
+  For example, specifying
+    ..\game.dat
+    ..\generals.exe
+  would first check if ..\game.dat exists and launch it if true.
+  Otherwise would check if ..\generals.exe exists and launch it if true.
+
++ shellexecute.txt
+  Sets launch mode. Write 1 to use ShellExecute API. Uses CreateProcess API by default.
+  Try this setting if the default launch process does not work.
 
 
 -----------------------------------------------------------------------------------------------
@@ -74,7 +91,10 @@ v1.9
 - Use ShellExecute instead of CreateProcess launch method
 
 v2.0
-- Add proxy launcher for both CreateProcess method (launcher) and ShellExecute method (launcherShell)
+- Added proxy launcher for both CreateProcess method (launcher) and ShellExecute method (launcherShell)
 
 v2.1
-- Add generals icon in executables
+- Added generals icon in executables
+
+v2.2
+- Added launch.txt and shellexecute.txt options
