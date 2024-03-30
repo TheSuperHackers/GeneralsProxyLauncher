@@ -111,6 +111,43 @@ bool ReadAsciiFile(const wchar_t* wszFileName, wchar_t(&buffer)[Size])
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool ReadAsciiFile(const wchar_t* wszFileName, std::wstring& buffer)
+{
+	bool success = false;
+	FILE* fp;
+	if (::_wfopen_s(&fp, wszFileName, L"r") == 0)
+	{
+		char readBuffer[4096];
+		::fseek(fp, 0, SEEK_END);
+		const size_t fileSize = (size_t)::ftell(fp);
+		::fseek(fp, 0, SEEK_SET);
+
+		buffer.resize(fileSize);
+		size_t writeSize = 0;
+
+		for (;;)
+		{
+			const size_t readSize = ::fread(readBuffer, sizeof(char), sizeof(readBuffer), fp);
+			if (readSize == 0)
+				break;
+			::mbstowcs(&buffer[writeSize], readBuffer, readSize);
+			writeSize += readSize;
+		}
+		success = writeSize > 0;
+		::fclose(fp);
+	}
+	return success;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool FileExists(const wchar_t* fileName)
+{
+	return 0 == ::_waccess_s(fileName, 0);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool IsAtleastWindowsVista()
 {
 	OSVERSIONINFO osvi = {0};
@@ -144,22 +181,61 @@ void Shutdown()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::wstring FindGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir)
+{
+	std::wstring applicationExe;
+	std::wstring txtContent;
+	wchar_t wszTxt[MAX_PATH];
+	::wcslcpy_t(wszTxt, wszLauncherDir);
+	::wcslcat_t(wszTxt, L"\\launch.txt");
+
+	if (ReadAsciiFile(wszTxt, txtContent))
+	{
+		CTokenExtractor tokenExtractor(txtContent.c_str());
+		while (const wchar_t* wszFileName = tokenExtractor.GetNext(L"\n"))
+		{
+			applicationExe.assign(wszLauncherDir);
+			applicationExe.append(L"\\");
+			applicationExe.append(wszFileName);
+
+			if (FileExists(applicationExe.c_str()))
+			{
+				break;
+			}
+			else
+			{
+				applicationExe.clear();
+			}
+		}
+	}
+
+	if (applicationExe.empty())
+	{
+		applicationExe.assign(wszGameDir);
+		applicationExe.append(L"\\generals.exe");
+	}
+
+	return applicationExe;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir, int argc, _TCHAR* argv[])
 {
-	wchar_t wszCommandlineTxt[MAX_PATH];
-	::wcslcpy_t(wszCommandlineTxt, wszLauncherDir);
-	::wcslcat_t(wszCommandlineTxt, L"\\commandline.txt");
-
-	wchar_t wszApplicationExe[MAX_PATH];
-	::wcslcpy_t(wszApplicationExe, wszGameDir);
-	::wcslcat_t(wszApplicationExe, L"\\generals.exe");
+	const std::wstring applicationExe = FindGeneralsExe(wszLauncherDir, wszGameDir);
 
 	wchar_t wszCommandline[32767];
 	wszCommandline[0] = 0;
 
-	if (!ReadAsciiFile(wszCommandlineTxt, wszCommandline))
 	{
-		::wcslcpy_t(wszCommandline, COMMANDLINE);
+		wchar_t wszTxt[MAX_PATH];
+		::wcslcpy_t(wszTxt, wszLauncherDir);
+		::wcslcat_t(wszTxt, L"\\commandline.txt");
+
+		if (!ReadAsciiFile(wszTxt, wszCommandline))
+		{
+			::wcslcpy_t(wszCommandline, COMMANDLINE);
+		}
 	}
 
 	for (int i = 1; i < argc; ++i)
@@ -168,7 +244,7 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 		::wcslcat_t(wszCommandline, argv[i]);
 	}
 
-	::printf("Launching %ls%ls\n", wszApplicationExe, wszCommandline);
+	::printf("Launching %ls %ls\n", applicationExe.c_str(), wszCommandline);
 
 #if USE_SHELLEXECUTE
 	SHELLEXECUTEINFOW ShExecInfo = {0};
@@ -176,7 +252,7 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
     ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NOASYNC;
     ShExecInfo.hwnd = NULL;
 	ShExecInfo.lpVerb = L"open";
-    ShExecInfo.lpFile = wszApplicationExe;
+    ShExecInfo.lpFile = applicationExe.c_str();
     ShExecInfo.lpParameters = wszCommandline;
     ShExecInfo.lpDirectory = wszGameDir;
     ShExecInfo.nShow = SW_SHOWNORMAL;
@@ -206,7 +282,7 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 	LPVOID lpEnvironment = NULL;
 
     if (0 != ::CreateProcessW(
-		wszApplicationExe,
+		applicationExe.c_str(),
         wszCommandline,
         lpProcessAttributes,
 		lpThreadAttributes,
@@ -281,8 +357,8 @@ bool InitiateLaunch(int argc, _TCHAR* argv[])
 	::wcslcpy_t(wszBigTxtFileName, wszLauncherDir);
 	::wcslcat_t(wszBigTxtFileName, L"\\big.txt");
 
-	wchar_t wzsBigTxtContent[4096] = {0};
-	const bool hasMods = ReadAsciiFile(wszBigTxtFileName, wzsBigTxtContent);
+	std::wstring bigTxtContent;
+	const bool hasMods = ReadAsciiFile(wszBigTxtFileName, bigTxtContent);
 
 	std::vector<std::wstring> originalModNames;
 	std::vector<std::wstring> replacementModNames;
@@ -291,7 +367,7 @@ bool InitiateLaunch(int argc, _TCHAR* argv[])
 
 	if (hasMods)
 	{
-		CTokenExtractor tokenExtractor(wzsBigTxtContent);
+		CTokenExtractor tokenExtractor(bigTxtContent.c_str());
 		while (const wchar_t* wszOriginalFileName = tokenExtractor.GetNext(L"\n"))
 		{
 			originalModNames.push_back(std::wstring());
