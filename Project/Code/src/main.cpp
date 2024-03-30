@@ -55,13 +55,15 @@ bool ReadAsciiFile(const wchar_t* wszFileName, wchar_t(&buffer)[Size])
 	FILE* fp;
 	if (::_wfopen_s(&fp, wszFileName, L"r") == 0)
 	{
-		char readBuffer[Size] = {0};
+		char readBuffer[Size];
 		::fseek(fp, 0, SEEK_END);
-		long fs = ::ftell(fp);
+		const size_t fileSize = ::ftell(fp);
 		::fseek(fp, 0, SEEK_SET);
-		if (::fread(readBuffer, sizeof(char), fs>Size ? Size:fs, fp) != 0)
+		const size_t readSize = ::fread(readBuffer, sizeof(char), fileSize >= Size ? Size-1 : fileSize, fp);
+		if (readSize != 0)
 		{
-			::mbstowcs(buffer, readBuffer, Size);
+			::mbstowcs(buffer, readBuffer, readSize);
+			buffer[readSize] = 0;
 			success = true;
 		}
 		::fclose(fp);
