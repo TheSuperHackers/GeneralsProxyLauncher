@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneralsProxyLauncher", "vc9\GeneralsProxyLauncher.vcproj", "{9A1E6171-72A7-4115-9315-D8CA7F18DB2A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneralsProxyLauncher_ShellExecute", "vc9\GeneralsProxyLauncher_ShellExecute.vcproj", "{95835DDB-110F-40D9-A032-ECA9FBD9E3CE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,10 +13,6 @@ Global
 		{9A1E6171-72A7-4115-9315-D8CA7F18DB2A}.Debug|Win32.Build.0 = Debug|Win32
 		{9A1E6171-72A7-4115-9315-D8CA7F18DB2A}.Release|Win32.ActiveCfg = Release|Win32
 		{9A1E6171-72A7-4115-9315-D8CA7F18DB2A}.Release|Win32.Build.0 = Release|Win32
-		{95835DDB-110F-40D9-A032-ECA9FBD9E3CE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{95835DDB-110F-40D9-A032-ECA9FBD9E3CE}.Debug|Win32.Build.0 = Debug|Win32
-		{95835DDB-110F-40D9-A032-ECA9FBD9E3CE}.Release|Win32.ActiveCfg = Release|Win32
-		{95835DDB-110F-40D9-A032-ECA9FBD9E3CE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
