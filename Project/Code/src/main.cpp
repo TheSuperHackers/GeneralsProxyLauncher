@@ -15,6 +15,77 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class CTokenExtractor
+{
+public:
+	CTokenExtractor(const wchar_t* wszText)
+	{
+		const size_t wszTextLen = ::wcslen(wszText);
+		m_wszTextCopy = new wchar_t[wszTextLen+1];
+		::wcslcpy(m_wszTextCopy, wszText, wszTextLen+1);
+		m_wszTextNextToken = m_wszTextCopy;
+	}
+
+	~CTokenExtractor()
+	{
+		delete m_wszTextCopy;
+	}
+
+	const wchar_t* GetNext(const wchar_t* wszToken)
+	{
+		const wchar_t* wszResult = ::wcstok(m_wszTextNextToken, wszToken);
+		m_wszTextNextToken = NULL;
+		return wszResult;
+	}
+
+private:
+	wchar_t* m_wszTextCopy;
+	wchar_t* m_wszTextNextToken;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class CPathStringW
+{
+public:
+	CPathStringW() {}
+	CPathStringW(const wchar_t* wszPath)
+	{
+		Assign(wszPath);
+	}
+
+	void Assign(const wchar_t* wszPath)
+	{
+		m_path.assign(wszPath);
+	}
+
+	const wchar_t* GetCStr() const
+	{
+		return m_path.c_str();
+	}
+
+	bool ReplaceEnd(const wchar_t* wszSearch, const wchar_t* wszReplace)
+	{
+		const size_t searchLen = ::wcslen(wszSearch);
+		if (m_path.size() > searchLen)
+		{
+			const size_t searchIndex = m_path.size()-searchLen;
+			if (::wcscmp(&m_path[searchIndex], wszSearch) == 0)
+			{
+				m_path.erase(searchIndex);
+				m_path.append(wszReplace);
+				return true;
+			}
+		}
+		return false;
+	}
+
+private:
+	std::wstring m_path;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool IsAtleastWindowsVista()
 {
 	OSVERSIONINFO osvi = {0};
@@ -164,77 +235,6 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 
 	return true;
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class CTokenExtractor
-{
-public:
-	CTokenExtractor(const wchar_t* wszText)
-	{
-		const size_t wszTextLen = ::wcslen(wszText);
-		m_wszTextCopy = new wchar_t[wszTextLen+1];
-		::wcslcpy(m_wszTextCopy, wszText, wszTextLen+1);
-		m_wszTextNextToken = m_wszTextCopy;
-	}
-
-	~CTokenExtractor()
-	{
-		delete m_wszTextCopy;
-	}
-
-	const wchar_t* GetNext(const wchar_t* wszToken)
-	{
-		const wchar_t* wszResult = ::wcstok(m_wszTextNextToken, wszToken);
-		m_wszTextNextToken = NULL;
-		return wszResult;
-	}
-
-private:
-	wchar_t* m_wszTextCopy;
-	wchar_t* m_wszTextNextToken;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class CPathStringW
-{
-public:
-	CPathStringW() {}
-	CPathStringW(const wchar_t* wszPath)
-	{
-		Assign(wszPath);
-	}
-
-	void Assign(const wchar_t* wszPath)
-	{
-		m_path.assign(wszPath);
-	}
-
-	const wchar_t* GetCStr() const
-	{
-		return m_path.c_str();
-	}
-
-	bool ReplaceEnd(const wchar_t* wszSearch, const wchar_t* wszReplace)
-	{
-		const size_t searchLen = ::wcslen(wszSearch);
-		if (m_path.size() > searchLen)
-		{
-			const size_t searchIndex = m_path.size()-searchLen;
-			if (::wcscmp(&m_path[searchIndex], wszSearch) == 0)
-			{
-				m_path.erase(searchIndex);
-				m_path.append(wszReplace);
-				return true;
-			}
-		}
-		return false;
-	}
-
-private:
-	std::wstring m_path;
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
