@@ -220,29 +220,35 @@ std::wstring FindGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGa
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+template <size_t Size>
+void BuildCommandLine(const wchar_t* wszLauncherDir, int argc, _TCHAR* argv[], wchar_t(&buffer)[Size])
+{
+	buffer[0] = 0;
+
+	wchar_t wszTxt[MAX_PATH];
+	::wcslcpy_t(wszTxt, wszLauncherDir);
+	::wcslcat_t(wszTxt, L"\\commandline.txt");
+
+	if (!ReadAsciiFile(wszTxt, buffer))
+	{
+		::wcslcpy_t(buffer, COMMANDLINE);
+	}
+
+	for (int i = 1; i < argc; ++i)
+	{
+		::wcslcat_t(buffer, L" ");
+		::wcslcat_t(buffer, argv[i]);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir, int argc, _TCHAR* argv[])
 {
 	const std::wstring applicationExe = FindGeneralsExe(wszLauncherDir, wszGameDir);
 
 	wchar_t wszCommandline[32767];
-	wszCommandline[0] = 0;
-
-	{
-		wchar_t wszTxt[MAX_PATH];
-		::wcslcpy_t(wszTxt, wszLauncherDir);
-		::wcslcat_t(wszTxt, L"\\commandline.txt");
-
-		if (!ReadAsciiFile(wszTxt, wszCommandline))
-		{
-			::wcslcpy_t(wszCommandline, COMMANDLINE);
-		}
-	}
-
-	for (int i = 1; i < argc; ++i)
-	{
-		::wcslcat_t(wszCommandline, L" ");
-		::wcslcat_t(wszCommandline, argv[i]);
-	}
+	BuildCommandLine(wszLauncherDir, argc, argv, wszCommandline);
 
 	::printf("Launching %ls %ls\n", applicationExe.c_str(), wszCommandline);
 
