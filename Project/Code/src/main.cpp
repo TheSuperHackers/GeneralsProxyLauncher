@@ -10,9 +10,6 @@
 // which are issued to this executable
 #define COMMANDLINE L" -win"
 
-// Use shell execute. Create Process does not work properly on some clients.
-//#define USE_SHELLEXECUTE 1
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class CTokenExtractor
@@ -160,13 +157,8 @@ bool IsAtleastWindowsVista()
 
 void Welcome()
 {
-#if USE_SHELLEXECUTE
-	::printf("Generals Proxy Launcher (Shell) v2.0 by xezon\n");
-	::printf("---------------------------------------------\n\n");
-#else
 	::printf("Generals Proxy Launcher v2.0 by xezon\n");
 	::printf("-------------------------------------\n\n");
-#endif
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,6 +235,28 @@ void BuildCommandLine(const wchar_t* wszLauncherDir, int argc, _TCHAR* argv[], w
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool UseShellExecute(const wchar_t* wszLauncherDir)
+{
+	bool use = false;
+
+	wchar_t wszTxtContent[2];
+	wchar_t wszTxt[MAX_PATH];
+	::wcslcpy_t(wszTxt, wszLauncherDir);
+	::wcslcat_t(wszTxt, L"\\shellexecute.txt");
+
+	if (ReadAsciiFile(wszTxt, wszTxtContent))
+	{
+		if (wszTxtContent[0] != L'\0' && wszTxtContent[0] != L'0')
+		{
+			use = true;
+		}
+	}
+
+	return use;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir, int argc, _TCHAR* argv[])
 {
 	const std::wstring applicationExe = FindGeneralsExe(wszLauncherDir, wszGameDir);
@@ -252,68 +266,71 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 
 	::printf("Launching %ls %ls\n", applicationExe.c_str(), wszCommandline);
 
-#if USE_SHELLEXECUTE
-	SHELLEXECUTEINFOW ShExecInfo = {0};
-    ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
-    ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NOASYNC;
-    ShExecInfo.hwnd = NULL;
-	ShExecInfo.lpVerb = L"open";
-    ShExecInfo.lpFile = applicationExe.c_str();
-    ShExecInfo.lpParameters = wszCommandline;
-    ShExecInfo.lpDirectory = wszGameDir;
-    ShExecInfo.nShow = SW_SHOWNORMAL;
-    ShExecInfo.hInstApp = NULL;
-
-	if (FALSE != ::ShellExecuteExW(&ShExecInfo))
+	if (UseShellExecute(wszLauncherDir))
 	{
-		::printf("Game launch successful\nDo not close this box. Please wait...\n");
-		::WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+		SHELLEXECUTEINFOW ShExecInfo = {0};
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NOASYNC;
+		ShExecInfo.hwnd = NULL;
+		ShExecInfo.lpVerb = L"open";
+		ShExecInfo.lpFile = applicationExe.c_str();
+		ShExecInfo.lpParameters = wszCommandline;
+		ShExecInfo.lpDirectory = wszGameDir;
+		ShExecInfo.nShow = SW_SHOWNORMAL;
+		ShExecInfo.hInstApp = NULL;
+
+		if (FALSE != ::ShellExecuteExW(&ShExecInfo))
+		{
+			::printf("Game launch successful\nDo not close this box. Please wait...\n");
+			::WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+		}
+		else
+		{
+			char szMessage[256];
+			DWORD error = ::GetLastError();
+			::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, szMessage, sizeof(szMessage), NULL);
+			::printf("Game launch failed (Code:%u Error:%s)\n", error, szMessage);
+			return false;
+		}
 	}
 	else
 	{
-		char szMessage[256];
-		DWORD error = ::GetLastError();
-		::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, szMessage, sizeof(szMessage), NULL);
-		::printf("Game launch failed (Code:%u Error:%s)\n", error, szMessage);
-		return false;
-	}
-#else
-	STARTUPINFO startupInfo = {0};
-    PROCESS_INFORMATION processInfo = {0};
-    startupInfo.cb = sizeof(startupInfo);
-	LPSECURITY_ATTRIBUTES lpProcessAttributes = NULL;
-	LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
-	BOOL bInheritHandles = FALSE;
-	DWORD dwCreationFlags = 0;
-	LPVOID lpEnvironment = NULL;
+		STARTUPINFO startupInfo = {0};
+		PROCESS_INFORMATION processInfo = {0};
+		startupInfo.cb = sizeof(startupInfo);
+		LPSECURITY_ATTRIBUTES lpProcessAttributes = NULL;
+		LPSECURITY_ATTRIBUTES lpThreadAttributes = NULL;
+		BOOL bInheritHandles = FALSE;
+		DWORD dwCreationFlags = 0;
+		LPVOID lpEnvironment = NULL;
 
-    if (0 != ::CreateProcessW(
-		applicationExe.c_str(),
-        wszCommandline,
-        lpProcessAttributes,
-		lpThreadAttributes,
-		bInheritHandles,
-		dwCreationFlags,
-		lpEnvironment,
-        wszGameDir,
-        &startupInfo,
-		&processInfo)
-    )
-    {
-		::printf("Game launch successful.\nDo not close this box. Please wait . . .\n");
-		::WaitForSingleObject(processInfo.hProcess, INFINITE);
-		::CloseHandle(processInfo.hProcess);
-		::CloseHandle(processInfo.hThread);
-    }
-	else
-	{
-		char szMessage[256];
-		DWORD error = ::GetLastError();
-		::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, szMessage, sizeof(szMessage), NULL);
-		::printf("Game launch failed (Code:%u Error:%s)\n", error, szMessage);
-        return false;
+		if (0 != ::CreateProcessW(
+			applicationExe.c_str(),
+			wszCommandline,
+			lpProcessAttributes,
+			lpThreadAttributes,
+			bInheritHandles,
+			dwCreationFlags,
+			lpEnvironment,
+			wszGameDir,
+			&startupInfo,
+			&processInfo)
+		)
+		{
+			::printf("Game launch successful.\nDo not close this box. Please wait . . .\n");
+			::WaitForSingleObject(processInfo.hProcess, INFINITE);
+			::CloseHandle(processInfo.hProcess);
+			::CloseHandle(processInfo.hThread);
+		}
+		else
+		{
+			char szMessage[256];
+			DWORD error = ::GetLastError();
+			::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, szMessage, sizeof(szMessage), NULL);
+			::printf("Game launch failed (Code:%u Error:%s)\n", error, szMessage);
+			return false;
+		}
 	}
-#endif
 
 	return true;
 }
