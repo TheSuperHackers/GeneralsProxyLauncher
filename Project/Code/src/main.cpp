@@ -99,9 +99,9 @@ bool ReadAsciiFile(const wchar_t* wszFileName, wchar_t(&buffer)[Size])
 		{
 			::mbstowcs(buffer, readBuffer, readSize);
 			buffer[readSize] = 0;
-			success = true;
 		}
 		::fclose(fp);
+		success = true;
 	}
 	return success;
 }
@@ -130,8 +130,8 @@ bool ReadAsciiFile(const wchar_t* wszFileName, std::wstring& buffer)
 			::mbstowcs(&buffer[writeSize], readBuffer, readSize);
 			writeSize += readSize;
 		}
-		success = writeSize > 0;
 		::fclose(fp);
+		success = true;
 	}
 	return success;
 }
@@ -141,6 +141,22 @@ bool ReadAsciiFile(const wchar_t* wszFileName, std::wstring& buffer)
 bool FileExists(const wchar_t* fileName)
 {
 	return 0 == ::_waccess_s(fileName, 0);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool IsAbsolutePath(const wchar_t* fileName)
+{
+	if (fileName[0] != L'\0' && fileName[1] == L':')
+		return true;
+
+	if (fileName[0] == L'\\' && fileName[1] == L'\\')
+		return true;
+
+	if (fileName[0] == L'/' && fileName[1] == L'/')
+		return true;
+
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,9 +202,16 @@ std::wstring FindGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGa
 		CTokenExtractor tokenExtractor(txtContent.c_str());
 		while (const wchar_t* wszFileName = tokenExtractor.GetNext(L"\n"))
 		{
-			applicationExe.assign(wszLauncherDir);
-			applicationExe.append(L"\\");
-			applicationExe.append(wszFileName);
+			if (IsAbsolutePath(wszFileName))
+			{
+				applicationExe.assign(wszFileName);
+			}
+			else
+			{
+				applicationExe.assign(wszLauncherDir);
+				applicationExe.append(L"\\");
+				applicationExe.append(wszFileName);
+			}
 
 			if (FileExists(applicationExe.c_str()))
 			{
@@ -264,7 +287,7 @@ bool LaunchGeneralsExe(const wchar_t* wszLauncherDir, const wchar_t* wszGameDir,
 	wchar_t wszCommandline[32767];
 	BuildCommandLine(wszLauncherDir, argc, argv, wszCommandline);
 
-	::printf("Launching %ls %ls\n", applicationExe.c_str(), wszCommandline);
+	::printf("Launching %ls%ls\n", applicationExe.c_str(), wszCommandline);
 
 	if (UseShellExecute(wszLauncherDir))
 	{
@@ -385,11 +408,11 @@ bool InitiateLaunch(int argc, _TCHAR* argv[])
 
 	std::vector<std::wstring> originalModNames;
 	std::vector<std::wstring> replacementModNames;
-	originalModNames.reserve(32);
-	replacementModNames.reserve(32);
 
 	if (hasMods)
 	{
+		originalModNames.reserve(32);
+		replacementModNames.reserve(32);
 		CTokenExtractor tokenExtractor(bigTxtContent.c_str());
 		while (const wchar_t* wszOriginalFileName = tokenExtractor.GetNext(L"\n"))
 		{
