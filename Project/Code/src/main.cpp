@@ -157,7 +157,7 @@ bool IsAtleastWindowsVista()
 
 void Welcome()
 {
-	::printf("Generals Proxy Launcher v2.0 by xezon\n");
+	::printf("Generals Proxy Launcher v2.2 by xezon\n");
 	::printf("-------------------------------------\n\n");
 };
 
