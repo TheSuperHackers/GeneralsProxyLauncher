@@ -86,6 +86,31 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+template <size_t Size>
+bool ReadAsciiFile(const wchar_t* wszFileName, wchar_t(&buffer)[Size])
+{
+	bool success = false;
+	FILE* fp;
+	if (::_wfopen_s(&fp, wszFileName, L"r") == 0)
+	{
+		char readBuffer[Size];
+		::fseek(fp, 0, SEEK_END);
+		const size_t fileSize = ::ftell(fp);
+		::fseek(fp, 0, SEEK_SET);
+		const size_t readSize = ::fread(readBuffer, sizeof(char), fileSize >= Size ? Size-1 : fileSize, fp);
+		if (readSize != 0)
+		{
+			::mbstowcs(buffer, readBuffer, readSize);
+			buffer[readSize] = 0;
+			success = true;
+		}
+		::fclose(fp);
+	}
+	return success;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool IsAtleastWindowsVista()
 {
 	OSVERSIONINFO osvi = {0};
@@ -116,31 +141,6 @@ void Shutdown()
 	::FlushConsoleInputBuffer(::GetStdHandle(STD_INPUT_HANDLE));
 	::getchar();
 };
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template <size_t Size>
-bool ReadAsciiFile(const wchar_t* wszFileName, wchar_t(&buffer)[Size])
-{
-	bool success = false;
-	FILE* fp;
-	if (::_wfopen_s(&fp, wszFileName, L"r") == 0)
-	{
-		char readBuffer[Size];
-		::fseek(fp, 0, SEEK_END);
-		const size_t fileSize = ::ftell(fp);
-		::fseek(fp, 0, SEEK_SET);
-		const size_t readSize = ::fread(readBuffer, sizeof(char), fileSize >= Size ? Size-1 : fileSize, fp);
-		if (readSize != 0)
-		{
-			::mbstowcs(buffer, readBuffer, readSize);
-			buffer[readSize] = 0;
-			success = true;
-		}
-		::fclose(fp);
-	}
-	return success;
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
